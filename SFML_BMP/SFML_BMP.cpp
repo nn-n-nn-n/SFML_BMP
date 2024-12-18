@@ -44,6 +44,8 @@ struct RGBQuad  // структура элемента таблицы палит
 
 RenderWindow window(VideoMode(1024, 768), "BMP Test");
 
+#pragma pack(push, 1)
+
 void Show24BitImage(BitmapFileHeader &BFH, BitmapInfoHeader &BIH, ifstream& f)
 {
 	CircleShape point(1.f);// объявляем объект SFML - окружность дияметром 1, т.к. объекта-точки в SFML нет
@@ -74,7 +76,7 @@ void Show24BitImage(BitmapFileHeader &BFH, BitmapInfoHeader &BIH, ifstream& f)
 			unsigned char blue = colorBlue;
 			unsigned char green = colorGreen;
 			unsigned char red = colorRed;
-			point.setFillColor(Color(red, green, blue));// задаем цвет нашей единичной окружности
+			point.setFillColor(Color(red,green,blue));// задаем цвет нашей единичной окружности
 			point.setPosition(x, y); // позиционируем окружность в нужную точку окна
 			window.draw(point); // рисуем точку
 		}
@@ -83,6 +85,8 @@ void Show24BitImage(BitmapFileHeader &BFH, BitmapInfoHeader &BIH, ifstream& f)
 	//delete[] palette; // освобождаем память, выделенную для палитры
 
 }
+
+#pragma pack(pop)
 
 void Show8BitImage(BitmapFileHeader& BFH, BitmapInfoHeader& BIH, ifstream& f)
 {
@@ -238,21 +242,39 @@ bool ReadAndShowBMP(string FN)
 	f.close(); // закрываем файл
 }
 
+bool CheckBMP(std::string fname)
+{
+	BitmapFileHeader BFH; // объявляем переменную для хранения заголовка BitmapFileHeader
+	BitmapInfoHeader BIH; // объявляем переменную для хранения заголовка BitmapInfoHeader
+	std::ifstream f(fname, std::ios::binary);
+	if (!f)
+		return false;
+	f.read((char*)&BFH, sizeof(BitmapFileHeader));		// читаем из файла заголовок BitmapFileHeader в переменную BFH
+	f.read((char*)&BIH, sizeof(BitmapInfoHeader));      // читаем из файла заголовок BitmapInfoHeader в переменную BIH
+
+	f.seekg(0, std::ios_base::end);						// ставим курсор в конец файла
+	if (BIH.biSize != 40 || BFH.bfType[0] != 'B' || BFH.bfType[1] != 'M' || BFH.bfSize != f.tellg())		// проверка файла на некорректность
+		return false;
+	return true;			// если всё хорошо
+}
 
 
 int main()
 {
 	window.clear(); // очищаем окно
-	ReadAndShowBMP("24.bmp"); // вызываем нашу функцию вывода bmp файла
-	window.display(); // отображаем построенное изображение нв экране
-	while (window.isOpen()) // ждем закрытия окна
+	string fileName = "24.bmp";
+	ReadAndShowBMP(fileName); // вызываем нашу функцию вывода bmp файла
+	if (CheckBMP(fileName))
 	{
-		Event event;
-		while (window.pollEvent(event))
+		window.display(); // отображаем построенное изображение нв экране
+		while (window.isOpen()) // ждем закрытия окна
 		{
-			if (event.type == Event::Closed)
-				window.close();
+			Event event;
+			while (window.pollEvent(event))
+			{
+				if (event.type == Event::Closed)
+					window.close();
+			}
 		}
 	}
 }
-
