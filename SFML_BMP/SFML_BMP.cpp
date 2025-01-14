@@ -65,14 +65,14 @@ void Show24BitImage(BitmapFileHeader &BFH, BitmapInfoHeader &BIH, ifstream& f)
 	for (int y = BIH.biHeight - 1; y >= 0; y--) // цикл вывода строк. Строки располагаются снизу-вверх
 	{
 		f.read((char*)bits, rowLength); // для каждой строки читаем растровые данные в память
-		for (int x = 0; x < BIH.biWidth; x++) // цикл вывода пикселей строки
+		for (int x = 0; x < BIH.biWidth; x += 3) // цикл вывода пикселей строки
 		{
 			/*if (x % 8)
 				mask = 255;*/
 			unsigned char blue = bits[x];//& mask;
 			unsigned char green = bits[x + 1]; // >> 8; // & mask; // или можно попробовать x + 8 
 			unsigned char red = bits[x + 2]; // >> 16; // а здесь x + 16 
-			// выбираем из палитрыы элементы с вычисленным индексом и помещаем их в переменные blue, green, red
+			// выбираем из палитры элементы с вычисленным индексом и помещаем их в переменные blue, green, red
 			point.setFillColor(Color(red,green,blue));// задаем цвет нашей единичной окружности
 			point.setPosition(x, y); // позиционируем окружность в нужную точку окна
 			window.draw(point); // рисуем точку
